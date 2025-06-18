@@ -24,17 +24,17 @@ export default function CustomerHome() {
 
   const { data: menu = [], isLoading: menuLoading } = useQuery<(MenuCategory & { items: MenuItem[] })[]>({
     queryKey: ["/api/customer/menu"],
-    queryFn: getQueryFn({}),
+    queryFn: getQueryFn({ on401: "returnNull" }),
   });
 
   const { data: tables = [], isLoading: tablesLoading } = useQuery<Table[]>({
     queryKey: ["/api/customer/tables"],
-    queryFn: getQueryFn({}),
+    queryFn: getQueryFn({ on401: "returnNull" }),
   });
 
   const { data: reservations = [], isLoading: reservationsLoading } = useQuery<Reservation[]>({
     queryKey: ["/api/customer/reservations"],
-    queryFn: getQueryFn({}),
+    queryFn: getQueryFn({ on401: "returnNull" }),
   });
 
   const reservationForm = useForm<InsertReservation>({
@@ -233,7 +233,7 @@ export default function CustomerHome() {
                           <FormItem>
                             <FormLabel>Phone Number</FormLabel>
                             <FormControl>
-                              <Input placeholder="(555) 123-4567" {...field} />
+                              <Input placeholder="(555) 123-4567" value={field.value || ""} onChange={field.onChange} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -249,7 +249,8 @@ export default function CustomerHome() {
                             <FormControl>
                               <Textarea 
                                 placeholder="Any special requests or dietary requirements..."
-                                {...field}
+                                value={field.value || ""}
+                                onChange={field.onChange}
                               />
                             </FormControl>
                             <FormMessage />

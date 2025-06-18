@@ -1,7 +1,7 @@
-# Restaurant Management System
+# Bar Reservation Management System
 
 ## Overview
-This is a full-stack restaurant management system built with React, Express.js, and PostgreSQL. The application provides comprehensive tools for managing reservations, tables, menu items, and inventory in a restaurant setting. It features a modern web interface with real-time data management and responsive design.
+This is a comprehensive bar reservation management system built with React, Express.js, and PostgreSQL. The application provides customer authentication, table reservations, bar-specific menu management, and staff administration tools. It features role-based access with separate interfaces for customers and staff, focusing on premium bar experiences with cocktails, spirits, and bar snacks.
 
 ## System Architecture
 
@@ -21,47 +21,52 @@ This is a full-stack restaurant management system built with React, Express.js, 
 - **Development**: Hot reload with Vite integration
 
 ### Database Design
-The system uses PostgreSQL with the following main entities:
-- **Users**: Authentication and role-based access (customer, staff, manager)
-- **Tables**: Restaurant table management with capacity and status tracking
-- **Reservations**: Customer booking system with date/time management
-- **Menu Categories**: Hierarchical menu organization
-- **Menu Items**: Individual dishes with pricing and categorization
-- **Inventory Items**: Stock management with minimum thresholds
+The system uses PostgreSQL with comprehensive entities for bar operations:
+- **Users**: Customer authentication with loyalty points, age verification, and role-based access (customer, staff, manager)
+- **Tables**: Bar table management with area-specific locations (main bar, VIP, lounge, terrace, outdoor)
+- **Reservations**: Customer booking system with payment integration and user association
+- **Menu Categories**: Bar-specific organization (spirits, cocktails, wine, beer, snacks)
+- **Menu Items**: Drinks and snacks with alcohol content, ingredients, and preparation time
+- **Inventory Items**: Bar stock management with expiration dates and supplier tracking
+- **Promotions**: Loyalty-based discounts and time-specific offers
+- **Orders**: Customer order tracking linked to reservations
+- **Events**: Special bar events and capacity management
 
 ## Key Components
 
-### Dashboard
-- Real-time statistics display
-- Today's reservations overview
-- Available tables count
-- Revenue tracking (mock data)
-- Recent reservations feed
+### Customer Interface
+- Customer registration and login with age/gender/birth date
+- Personal reservation management and history
+- Browse bar menu with detailed drink information
+- View available tables by area
+- Loyalty points tracking and profile management
+- Mobile-optimized booking experience
 
-### Reservation Management
-- Create, update, and cancel reservations
-- Filter by date, status, and table
-- Customer information tracking
-- Special requests handling
-- Status workflow (pending → confirmed → completed/cancelled)
+### Authentication System
+- Email-based login with password hashing
+- Role-based access control (customer vs staff)
+- Session management with secure cookies
+- User profile with loyalty program integration
 
-### Table Management
-- Visual table layout
-- Real-time status updates (available, occupied, reserved, unavailable)
-- Capacity management
-- Location tracking
+### Staff Dashboard
+- Real-time reservation monitoring
+- Table status management across bar areas
+- Customer data and visit history
+- Revenue tracking and analytics
+- Inventory management with low stock alerts
 
-### Menu Management
-- Category-based organization
-- Item pricing and descriptions
-- Availability status
-- Hierarchical menu structure
+### Bar Menu Management
+- Category-based organization by drink type
+- Detailed item information (alcohol content, ingredients, prep time)
+- Availability status and popularity tracking
+- Price management and special offers
 
-### Inventory Management
-- Stock level tracking
-- Low stock alerts
-- Unit pricing and cost calculations
-- Category-based organization
+### Reservation System
+- Customer-initiated bookings with authentication
+- Table preference selection by bar area
+- Special requests and dietary accommodations
+- Payment status tracking
+- Staff confirmation workflow
 
 ## Data Flow
 

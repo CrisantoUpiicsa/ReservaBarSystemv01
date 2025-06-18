@@ -208,7 +208,7 @@ export default function AuthPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Gender</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select" />
@@ -233,7 +233,7 @@ export default function AuthPage() {
                           <FormItem>
                             <FormLabel>Date of Birth</FormLabel>
                             <FormControl>
-                              <Input type="date" {...field} />
+                              <Input type="date" value={field.value || ""} onChange={field.onChange} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
