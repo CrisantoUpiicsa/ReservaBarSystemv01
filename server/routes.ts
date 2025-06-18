@@ -1,11 +1,78 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertReservationSchema, insertTableSchema, insertMenuItemSchema, insertMenuCategorySchema, insertInventoryItemSchema } from "@shared/schema";
+import { insertReservationSchema, insertTableSchema, insertMenuItemSchema, insertMenuCategorySchema, insertInventoryItemSchema, loginSchema, registerSchema } from "@shared/schema";
+import { setupAuth, requireAuth, requireRole } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Dashboard stats
-  app.get("/api/dashboard/stats", async (req, res) => {
+  // Setup authentication
+  setupAuth(app);
+  // Customer API routes (public access for login/register)
+  app.get("/api/customer/menu", async (req, res) => {
+    try {
+      const categories = await storage.getAllMenuCategories();
+      const items = await storage.getAllMenuItems();
+      
+      const menuWithItems = categories.map(category => ({
+        ...category,
+        items: items.filter(item => item.categoryId === category.id && item.available)
+      }));
+      
+      res.json(menuWithItems);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch menu" });
+    }
+  });
+
+  app.get("/api/customer/tables", async (req, res) => {
+    try {
+      const tables = await storage.getAllTables();
+      const availableTables = tables.filter(t => t.status === 'available');
+      res.json(availableTables);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch available tables" });
+    }
+  });
+
+  // Customer reservations (require authentication)
+  app.post("/api/customer/reservations", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as any;
+      const reservationData = {
+        ...req.body,
+        userId: user.id,
+        customerName: `${user.firstName} ${user.lastName}`,
+        customerEmail: user.email
+      };
+      
+      const validatedData = insertReservationSchema.parse(reservationData);
+      const reservation = await storage.createReservation(validatedData);
+      
+      // Update user's total visits
+      const updatedUser = await storage.getUser(user.id);
+      if (updatedUser) {
+        // This would update loyalty points in a real system
+      }
+      
+      res.status(201).json(reservation);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid reservation data" });
+    }
+  });
+
+  app.get("/api/customer/reservations", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as any;
+      const reservations = await storage.getAllReservations();
+      const userReservations = reservations.filter(r => r.userId === user.id);
+      res.json(userReservations);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch your reservations" });
+    }
+  });
+
+  // Staff/Manager Dashboard (require appropriate role)
+  app.get("/api/dashboard/stats", requireRole("staff"), async (req, res) => {
     try {
       const reservations = await storage.getAllReservations();
       const tables = await storage.getAllTables();
