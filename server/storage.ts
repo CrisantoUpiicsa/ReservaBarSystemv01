@@ -1,11 +1,16 @@
 import { 
-  users, tables, reservations, menuCategories, menuItems, inventoryItems,
+  users, tables, reservations, menuCategories, menuItems, inventoryItems, suppliers, stockMovements, promotions, orders, events,
   type User, type InsertUser,
   type Table, type InsertTable,
   type Reservation, type InsertReservation,
   type MenuCategory, type InsertMenuCategory,
   type MenuItem, type InsertMenuItem,
-  type InventoryItem, type InsertInventoryItem
+  type InventoryItem, type InsertInventoryItem,
+  type Supplier, type InsertSupplier,
+  type StockMovement, type InsertStockMovement,
+  type Promotion, type InsertPromotion,
+  type Order, type InsertOrder,
+  type Event, type InsertEvent
 } from "@shared/schema";
 
 export interface IStorage {
@@ -66,44 +71,51 @@ export class MemStorage implements IStorage {
   }
 
   private initializeSampleData() {
-    // Initialize tables
+    // Initialize tables with bar areas
+    const areas = ["main_bar", "vip", "lounge", "terrace", "outdoor"];
     for (let i = 1; i <= 20; i++) {
-      const capacity = i <= 10 ? (i % 3 === 0 ? 6 : i % 2 === 0 ? 4 : 2) : 8;
+      const capacity = i <= 5 ? 2 : i <= 10 ? 4 : i <= 15 ? 6 : 8;
       const status = i <= 2 ? "occupied" : i === 3 ? "reserved" : "available";
+      const area = areas[Math.floor((i - 1) / 4)];
       this.tables.set(i, {
         id: i,
         number: i,
         capacity,
         status,
-        location: `Floor ${Math.ceil(i / 10)}`,
+        location: `${area.replace('_', ' ').toUpperCase()} Area - Table ${i}`,
+        area,
         createdAt: new Date(),
       });
     }
 
-    // Initialize menu categories
+    // Initialize bar menu categories
     const categories = [
-      { id: 1, name: "Appetizers", description: "Start your meal right", displayOrder: 1 },
-      { id: 2, name: "Main Courses", description: "Our signature dishes", displayOrder: 2 },
-      { id: 3, name: "Desserts", description: "Sweet endings", displayOrder: 3 },
+      { id: 1, name: "Premium Spirits", description: "High-end whiskey, vodka, gin", displayOrder: 1, type: "drinks" },
+      { id: 2, name: "Signature Cocktails", description: "Our bartender's special creations", displayOrder: 2, type: "cocktails" },
+      { id: 3, name: "Wine Selection", description: "Curated wines from around the world", displayOrder: 3, type: "drinks" },
+      { id: 4, name: "Beer & Craft", description: "Local and imported beers", displayOrder: 4, type: "drinks" },
+      { id: 5, name: "Bar Snacks", description: "Perfect with your drinks", displayOrder: 5, type: "snacks" },
     ];
     categories.forEach(cat => this.menuCategories.set(cat.id, cat));
 
-    // Initialize menu items
+    // Initialize bar menu items
     const items = [
-      { id: 1, name: "Crispy Calamari", description: "Fresh squid rings with marinara sauce", price: "12.99", categoryId: 1, available: true, imageUrl: null, createdAt: new Date() },
-      { id: 2, name: "Bruschetta", description: "Toasted bread with fresh tomatoes and basil", price: "8.99", categoryId: 1, available: true, imageUrl: null, createdAt: new Date() },
-      { id: 3, name: "Grilled Salmon", description: "Atlantic salmon with seasonal vegetables", price: "24.99", categoryId: 2, available: true, imageUrl: null, createdAt: new Date() },
-      { id: 4, name: "Ribeye Steak", description: "12oz ribeye with garlic mashed potatoes", price: "32.99", categoryId: 2, available: true, imageUrl: null, createdAt: new Date() },
-      { id: 5, name: "Chocolate Lava Cake", description: "Warm chocolate cake with vanilla ice cream", price: "8.99", categoryId: 3, available: true, imageUrl: null, createdAt: new Date() },
-      { id: 6, name: "Tiramisu", description: "Classic Italian dessert with coffee and mascarpone", price: "7.99", categoryId: 3, available: true, imageUrl: null, createdAt: new Date() },
+      { id: 1, name: "Macallan 18", description: "Premium single malt whiskey", price: "45.00", categoryId: 1, available: true, imageUrl: null, alcoholContent: "43.0", ingredients: [], preparationTime: 1, popularity: 0, createdAt: new Date() },
+      { id: 2, name: "Grey Goose Martini", description: "Classic vodka martini with olives", price: "18.00", categoryId: 2, available: true, imageUrl: null, alcoholContent: "30.0", ingredients: ["Grey Goose Vodka", "Dry Vermouth", "Olives"], preparationTime: 3, popularity: 0, createdAt: new Date() },
+      { id: 3, name: "Caymus Cabernet", description: "Napa Valley red wine", price: "65.00", categoryId: 3, available: true, imageUrl: null, alcoholContent: "14.5", ingredients: [], preparationTime: 1, popularity: 0, createdAt: new Date() },
+      { id: 4, name: "IPA Draft", description: "Local craft IPA on tap", price: "8.00", categoryId: 4, available: true, imageUrl: null, alcoholContent: "6.2", ingredients: [], preparationTime: 1, popularity: 0, createdAt: new Date() },
+      { id: 5, name: "Truffle Fries", description: "Crispy fries with truffle oil and parmesan", price: "14.00", categoryId: 5, available: true, imageUrl: null, alcoholContent: null, ingredients: ["Potatoes", "Truffle Oil", "Parmesan", "Herbs"], preparationTime: 8, popularity: 0, createdAt: new Date() },
+      { id: 6, name: "Charcuterie Board", description: "Selection of cured meats and cheeses", price: "24.00", categoryId: 5, available: true, imageUrl: null, alcoholContent: null, ingredients: ["Prosciutto", "Salami", "Aged Cheese", "Crackers", "Olives"], preparationTime: 5, popularity: 0, createdAt: new Date() },
     ];
     items.forEach(item => this.menuItems.set(item.id, item));
 
-    // Initialize inventory
+    // Initialize bar inventory
     const inventory = [
-      { id: 1, name: "Atlantic Salmon", category: "Seafood", currentStock: 25, minimumStock: 10, unit: "lbs", unitPrice: "18.99", supplier: "Fresh Seafood Co.", lastRestocked: new Date(), createdAt: new Date() },
-      { id: 2, name: "Cabernet Sauvignon", category: "Beverages", currentStock: 8, minimumStock: 15, unit: "bottles", unitPrice: "45.00", supplier: "Premium Wines", lastRestocked: new Date(), createdAt: new Date() },
-      { id: 3, name: "Ribeye Beef", category: "Meat", currentStock: 15, minimumStock: 8, unit: "lbs", unitPrice: "28.50", supplier: "Prime Cuts", lastRestocked: new Date(), createdAt: new Date() },
+      { id: 1, name: "Macallan 18", category: "spirits", currentStock: 12, minimumStock: 5, unit: "bottles", unitPrice: "280.00", supplier: "Premium Spirits Co.", lastRestocked: new Date(), expirationDate: null, createdAt: new Date() },
+      { id: 2, name: "Grey Goose Vodka", category: "spirits", currentStock: 8, minimumStock: 15, unit: "bottles", unitPrice: "45.00", supplier: "Premium Spirits Co.", lastRestocked: new Date(), expirationDate: null, createdAt: new Date() },
+      { id: 3, name: "Caymus Cabernet", category: "wine", currentStock: 24, minimumStock: 12, unit: "bottles", unitPrice: "48.00", supplier: "Wine Distributors", lastRestocked: new Date(), expirationDate: null, createdAt: new Date() },
+      { id: 4, name: "IPA Keg", category: "beer", currentStock: 2, minimumStock: 3, unit: "kegs", unitPrice: "150.00", supplier: "Local Brewery", lastRestocked: new Date(), expirationDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), createdAt: new Date() },
+      { id: 5, name: "Truffle Oil", category: "supplies", currentStock: 3, minimumStock: 5, unit: "bottles", unitPrice: "35.00", supplier: "Gourmet Supplies", lastRestocked: new Date(), expirationDate: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000), createdAt: new Date() },
     ];
     inventory.forEach(item => this.inventoryItems.set(item.id, item));
   }
@@ -119,7 +131,14 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentId++;
-    const user: User = { ...insertUser, id, createdAt: new Date() };
+    const user: User = { 
+      ...insertUser, 
+      id, 
+      role: insertUser.role || "customer",
+      loyaltyPoints: 0,
+      totalVisits: 0,
+      createdAt: new Date() 
+    };
     this.users.set(id, user);
     return user;
   }
@@ -135,7 +154,13 @@ export class MemStorage implements IStorage {
 
   async createTable(insertTable: InsertTable): Promise<Table> {
     const id = this.currentId++;
-    const table: Table = { ...insertTable, id, createdAt: new Date() };
+    const table: Table = { 
+      ...insertTable, 
+      id, 
+      status: insertTable.status || "available",
+      area: insertTable.area || "main_bar",
+      createdAt: new Date() 
+    };
     this.tables.set(id, table);
     return table;
   }
@@ -165,7 +190,14 @@ export class MemStorage implements IStorage {
 
   async createReservation(insertReservation: InsertReservation): Promise<Reservation> {
     const id = this.currentId++;
-    const reservation: Reservation = { ...insertReservation, id, createdAt: new Date() };
+    const reservation: Reservation = { 
+      ...insertReservation, 
+      id, 
+      status: insertReservation.status || "pending",
+      totalAmount: "0",
+      paymentStatus: "pending",
+      createdAt: new Date() 
+    };
     this.reservations.set(id, reservation);
     return reservation;
   }
