@@ -112,7 +112,19 @@ The system uses PostgreSQL with comprehensive entities for bar operations:
 - **Database Migration**: `npm run db:push`
 
 ## Changelog
-- June 18, 2025. Initial setup
+- June 18, 2025: Initial setup
+- June 18, 2025: Complete transformation to bar reservation system with customer authentication, role-based access, and comprehensive bar menu management
+
+## Recent Changes
+- ✓ Implemented customer authentication system with email/password login
+- ✓ Added role-based access control (customer vs staff interfaces)
+- ✓ Created comprehensive bar menu with spirits, cocktails, wine, beer, and snacks
+- ✓ Enhanced database schema with loyalty points, bar areas, and payment tracking
+- ✓ Built customer interface with reservation management and menu browsing
+- ✓ Added authentication middleware and session management
+- ✓ Integrated bar-specific features (alcohol content, ingredients, preparation time)
+- ✓ Implemented table management across multiple bar areas (VIP, lounge, terrace)
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
+Project focus: Bar reservation system with customer login/registration, bar-specific menu items, and three user roles (customer, staff, manager).
