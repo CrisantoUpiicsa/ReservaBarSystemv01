@@ -17,6 +17,7 @@ export interface IStorage {
   // User operations
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
 
   // Table operations
@@ -129,12 +130,19 @@ export class MemStorage implements IStorage {
     return Array.from(this.users.values()).find(user => user.username === username);
   }
 
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.email === email);
+  }
+
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentId++;
     const user: User = { 
       ...insertUser, 
       id, 
       role: insertUser.role || "customer",
+      age: insertUser.age || null,
+      gender: insertUser.gender || null,
+      dateOfBirth: insertUser.dateOfBirth || null,
       loyaltyPoints: 0,
       totalVisits: 0,
       createdAt: new Date() 
@@ -159,6 +167,7 @@ export class MemStorage implements IStorage {
       id, 
       status: insertTable.status || "available",
       area: insertTable.area || "main_bar",
+      location: insertTable.location || null,
       createdAt: new Date() 
     };
     this.tables.set(id, table);
@@ -193,6 +202,10 @@ export class MemStorage implements IStorage {
     const reservation: Reservation = { 
       ...insertReservation, 
       id, 
+      userId: insertReservation.userId || null,
+      customerPhone: insertReservation.customerPhone || null,
+      tableId: insertReservation.tableId || null,
+      specialRequests: insertReservation.specialRequests || null,
       status: insertReservation.status || "pending",
       totalAmount: "0",
       paymentStatus: "pending",
@@ -231,14 +244,32 @@ export class MemStorage implements IStorage {
 
   async createMenuCategory(insertCategory: InsertMenuCategory): Promise<MenuCategory> {
     const id = this.currentId++;
-    const category: MenuCategory = { ...insertCategory, id };
+    const category: MenuCategory = { 
+      ...insertCategory, 
+      id,
+      type: insertCategory.type || "drinks",
+      description: insertCategory.description || null,
+      displayOrder: insertCategory.displayOrder || null
+    };
     this.menuCategories.set(id, category);
     return category;
   }
 
   async createMenuItem(insertItem: InsertMenuItem): Promise<MenuItem> {
     const id = this.currentId++;
-    const item: MenuItem = { ...insertItem, id, createdAt: new Date() };
+    const item: MenuItem = { 
+      ...insertItem, 
+      id, 
+      available: insertItem.available !== undefined ? insertItem.available : true,
+      description: insertItem.description || null,
+      categoryId: insertItem.categoryId || null,
+      imageUrl: insertItem.imageUrl || null,
+      alcoholContent: insertItem.alcoholContent || null,
+      ingredients: insertItem.ingredients || null,
+      preparationTime: insertItem.preparationTime || null,
+      popularity: 0,
+      createdAt: new Date() 
+    };
     this.menuItems.set(id, item);
     return item;
   }
@@ -268,7 +299,14 @@ export class MemStorage implements IStorage {
 
   async createInventoryItem(insertItem: InsertInventoryItem): Promise<InventoryItem> {
     const id = this.currentId++;
-    const item: InventoryItem = { ...insertItem, id, createdAt: new Date() };
+    const item: InventoryItem = { 
+      ...insertItem, 
+      id, 
+      supplier: insertItem.supplier || null,
+      lastRestocked: insertItem.lastRestocked || null,
+      expirationDate: insertItem.expirationDate || null,
+      createdAt: new Date() 
+    };
     this.inventoryItems.set(id, item);
     return item;
   }
