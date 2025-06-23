@@ -1,14 +1,15 @@
-// client/tailwind.config.js
 /** @type {import('tailwindcss').Config} */
 export default {
-  // MUY IMPORTANTE: Asegúrate que estas rutas sean correctas para que Tailwind escanee tus archivos
+  // MUY IMPORTANTE: Asegúrate que estas rutas sean correctas.
+  // `./index.html` es el archivo HTML principal de tu Vite app.
+  // `./src/**/*.{js,ts,jsx,tsx}` es para que escanee todos tus componentes.
   content: [
     "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}", // Esto es CRUCIAL
+    "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
-      // ESTO ES LO QUE GENERA bg-background, text-foreground, etc.
+      // Define tus colores personalizados aquí usando las variables CSS
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
@@ -26,10 +27,10 @@ export default {
         "secondary-foreground": "hsl(var(--secondary-foreground))",
         accent: "hsl(var(--accent))",
         "accent-foreground": "hsl(var(--accent-foreground))",
-        destructive: "hsl(var(--destructive))",
-        "destructive-foreground": "hsl(var(--destructive-foreground))",
+        destructive: "hsl(0, 84.2%, 60.2%)", // Valor directo si la variable no está en CSS
+        "destructive-foreground": "hsl(60, 9.1%, 97.8%)", // Valor directo si la variable no está en CSS
         ring: "hsl(var(--ring))",
-        // Asegúrate de que todos los colores que usas en index.css estén aquí
+        // Asegúrate de que todos los colores específicos de tu tema estén aquí
         "chart-1": "hsl(var(--chart-1))",
         "chart-2": "hsl(var(--chart-2))",
         "chart-3": "hsl(var(--chart-3))",
@@ -66,6 +67,6 @@ export default {
     },
   },
   plugins: [
-    require("tailwindcss-animate"),
+    require("tailwindcss-animate"), // Asegúrate de que este plugin está instalado en client/package.json
   ],
 };
