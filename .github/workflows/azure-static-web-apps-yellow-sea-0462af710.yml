@@ -25,15 +25,15 @@ jobs:
         with:
           node-version: '20.x' # Asegúrate de que esta versión coincida
 
-      - name: Install Frontend Dependencies in client/
-        run: npm install
-        working-directory: ./client # Ejecuta npm install DENTRO de la carpeta client/
+      # *** CAMBIO CRÍTICO AQUÍ: Limpiar node_modules y forzar una reinstalación ***
+      - name: Clean and Install Frontend Dependencies in client/
+        run: rm -rf node_modules && npm install # Elimina node_modules antes de reinstalar
+        working-directory: ./client
 
       - name: Build Frontend Application in client/
-        # *** CAMBIO CRÍTICO AQUÍ: Ejecutar directamente 'npx vite build' en lugar de 'npm run build' ***
         run: npx vite build
-        working-directory: ./client # Ejecuta npx vite build DENTRO de la carpeta client/
-        env: # Asegúrate de que Vite tenga el entorno de producción
+        working-directory: ./client
+        env:
           NODE_ENV: production
 
       - name: Build And Deploy Static Web App
@@ -43,9 +43,9 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_YELLOW_SEA_0462AF710 }}
           repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
           action: "upload"
-          app_location: "/client" # La ubicación de tu aplicación React dentro del repositorio (punto de entrada)
-          api_location: "" # Se deja vacío ya que tu API está en App Service
-          output_location: "dist" # La carpeta donde los pasos anteriores guardaron la compilación de Vite (client/dist)
+          app_location: "/client"
+          api_location: ""
+          output_location: "dist"
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
