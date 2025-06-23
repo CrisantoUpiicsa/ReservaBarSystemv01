@@ -48,7 +48,7 @@ export default function CustomerHome() {
       specialRequests: "",
     },
   });
-
+  console.log("Errores del formulario (en cada render):", reservationForm.formState.errors);
   const createReservationMutation = useMutation({
     mutationFn: async (data: InsertReservation) => {
       const res = await apiRequest("POST", "/api/customer/reservations", data);
@@ -92,7 +92,7 @@ export default function CustomerHome() {
     const hour = parseInt(hours);
     const ampm = hour >= 12 ? 'PM' : 'AM';
     const displayHour = hour % 12 || 12;
-    return `<span class="math-inline">\{displayHour\}\:</span>{minutes} ${ampm}`;
+    return `${displayHour}:${minutes} ${ampm}`;
   };
 
   if (!user) return null;
@@ -182,4 +182,271 @@ export default function CustomerHome() {
 
                       <div className="grid grid-cols-2 gap-4">
                         <FormField
-                          control={
+                          control={reservationForm.control}
+                          name="guests"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Guests</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  min="1"
+                                  max="8"
+                                  {...field}
+                                  // --- INICIO DE LA CORRECCIÓN ---
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    // Si el campo está vacío, pasa un string vacío para que Zod lo maneje como un error de campo requerido.
+                                    // Si no, convierte el valor a número base 10.
+                                    field.onChange(value === '' ? '' : parseInt(value, 10));
+                                  }}
+                                  // --- FIN DE LA CORRECCIÓN ---
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={reservationForm.control}
+                          name="tableId"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Preferred Table</FormLabel>
+                              <Select onValueChange={(value) => field.onChange(parseInt(value))}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Any available" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {tables.map((table) => (
+                                    <SelectItem key={table.id} value={table.id.toString()}>
+                                      Table {table.number} ({table.area.replace('_', ' ')}) - {table.capacity} seats
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <FormField
+                        control={reservationForm.control}
+                        name="customerPhone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Phone Number</FormLabel>
+                            <FormControl>
+                              <Input placeholder="(555) 123-4567" value={field.value || ""} onChange={field.onChange} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={reservationForm.control}
+                        name="specialRequests"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Special Requests</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                placeholder="Any special requests or dietary requirements..."
+                                value={field.value || ""}
+                                onChange={field.onChange}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <Button
+                        type="submit"
+                        className="w-full"
+                        disabled={createReservationMutation.isPending}
+                      >
+                        {createReservationMutation.isPending ? "Creating..." : "Reserve Table"}
+                      </Button>
+                    </form>
+                  </Form>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            <div className="grid gap-4">
+              {reservationsLoading ? (
+                <div className="text-center py-8">Loading your reservations...</div>
+              ) : !reservations || reservations.length === 0 ? (
+                <Card>
+                  <CardContent className="text-center py-8">
+                    <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600 dark:text-gray-400">No reservations yet</p>
+                    <p className="text-sm text-gray-500">Make your first reservation to get started!</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                reservations.map((reservation) => (
+                  <Card key={reservation.id}>
+                    <CardContent className="p-6">
+                      <div className="flex justify-between items-start">
+                        <div className="space-y-2">
+                          <div className="flex items-center space-x-2">
+                            <Calendar className="h-4 w-4 text-gray-600" />
+                            <span className="font-medium">{reservation.date}</span>
+                            <Clock className="h-4 w-4 text-gray-600 ml-4" />
+                            <span>{formatTime(reservation.time)}</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Users className="h-4 w-4 text-gray-600" />
+                            <span>{reservation.guests} guests</span>
+                            {reservation.tableId && (
+                              <>
+                                <MapPin className="h-4 w-4 text-gray-600 ml-4" />
+                                <span>Table {reservation.tableId}</span>
+                              </>
+                            )}
+                          </div>
+                          {reservation.specialRequests && (
+                            <p className="text-sm text-gray-600 mt-2">
+                              Special requests: {reservation.specialRequests}
+                            </p>
+                          )}
+                        </div>
+                        <Badge className={getStatusColor(reservation.status)}>
+                          {reservation.status}
+                        </Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="menu" className="space-y-6">
+            <h2 className="text-2xl font-bold">Our Menu</h2>
+            {menuLoading ? (
+              <div className="text-center py-8">Loading menu...</div>
+            ) : (
+              <div className="space-y-8">
+                {menu.map((category) => (
+                  <div key={category.id} className="space-y-4">
+                    <div>
+                      <h3 className="text-xl font-semibold">{category.name}</h3>
+                      <p className="text-gray-600 dark:text-gray-400">{category.description}</p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {category.items.map((item) => (
+                        <Card key={item.id}>
+                          <CardContent className="p-4">
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <h4 className="font-medium">{item.name}</h4>
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                  {item.description}
+                                </p>
+                                {item.alcoholContent && (
+                                  <p className="text-xs text-amber-600 mt-1">
+                                    {item.alcoholContent}% ABV
+                                  </p>
+                                )}
+                                {item.ingredients && item.ingredients.length > 0 && (
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    {item.ingredients.join(", ")}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="text-right">
+                                <span className="font-semibold text-lg">${item.price}</span>
+                                {item.preparationTime && (
+                                  <p className="text-xs text-gray-500">
+                                    {item.preparationTime} min
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="tables" className="space-y-6">
+            <h2 className="text-2xl font-bold">Available Tables</h2>
+            {tablesLoading ? (
+              <div className="text-center py-8">Loading tables...</div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {tables.map((table) => (
+                  <Card key={table.id}>
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-medium">Table {table.number}</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {table.area.replace('_', ' ').toUpperCase()} Area
+                          </p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            Up to {table.capacity} guests
+                          </p>
+                          {table.location && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              {table.location}
+                            </p>
+                          )}
+                        </div>
+                        <Badge className="bg-green-100 text-green-800">
+                          Available
+                        </Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="profile" className="space-y-6">
+            <h2 className="text-2xl font-bold">My Profile</h2>
+            <Card>
+              <CardContent className="p-6 space-y-4">
+                <div className="flex items-center space-x-4">
+                  <div className="h-16 w-16 bg-amber-100 rounded-full flex items-center justify-center">
+                    <span className="text-2xl font-semibold text-amber-800">
+                      {user.firstName[0]}{user.lastName[0]}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold">{user.firstName} {user.lastName}</h3>
+                    <p className="text-gray-600 dark:text-gray-400">@{user.username}</p>
+                    <p className="text-gray-600 dark:text-gray-400">{user.email}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 pt-4">
+                  <div className="text-center p-4 bg-amber-50 dark:bg-amber-950 rounded-lg">
+                    <div className="text-2xl font-bold text-amber-600">{user.loyaltyPoints}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Loyalty Points</div>
+                  </div>
+                  <div className="text-center p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">{user.totalVisits}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Total Visits</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+}

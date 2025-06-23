@@ -2,11 +2,15 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import type { MenuCategory, MenuItem, InsertMenuCategory, InsertMenuItem } from "@shared/schema";
 
+// Define la URL base aquí ya que usa fetch directamente en useMenuCategories y useMenuItems.
+const API_BASE_URL = process.env.REACT_APP_API_URL; // <--- AÑADIDO: Define la URL base
+
 export function useMenuCategories() {
   return useQuery<MenuCategory[]>({
     queryKey: ["/api/menu/categories"],
     queryFn: async () => {
-      const response = await fetch("/api/menu/categories");
+      // MODIFICACIÓN CLAVE AQUÍ: AÑADE API_BASE_URL
+      const response = await fetch(`${API_BASE_URL}/api/menu/categories`);
       if (!response.ok) throw new Error("Failed to fetch menu categories");
       return response.json();
     },
@@ -15,11 +19,12 @@ export function useMenuCategories() {
 
 export function useMenuItems(categoryId?: number) {
   const queryParams = categoryId ? `?categoryId=${categoryId}` : "";
-  
+
   return useQuery<MenuItem[]>({
     queryKey: ["/api/menu/items", categoryId],
     queryFn: async () => {
-      const response = await fetch(`/api/menu/items${queryParams}`);
+      // MODIFICACIÓN CLAVE AQUÍ: AÑADE API_BASE_URL
+      const response = await fetch(`${API_BASE_URL}/api/menu/items${queryParams}`);
       if (!response.ok) throw new Error("Failed to fetch menu items");
       return response.json();
     },

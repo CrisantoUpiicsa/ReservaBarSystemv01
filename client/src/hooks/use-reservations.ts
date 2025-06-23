@@ -2,6 +2,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import type { Reservation, InsertReservation } from "@shared/schema";
 
+// Define la URL base aquí o en un archivo de configuración compartido si quieres.
+// Para este archivo, la definiremos localmente ya que usa fetch directamente en useReservations.
+const API_BASE_URL = process.env.REACT_APP_API_URL; // <--- AÑADIDO: Define la URL base
+
 export function useReservations(filters?: {
   date?: string;
   status?: string;
@@ -15,7 +19,8 @@ export function useReservations(filters?: {
   return useQuery<Reservation[]>({
     queryKey: ["/api/reservations", filters],
     queryFn: async () => {
-      const url = `/api/reservations${queryParams.toString() ? `?${queryParams}` : ""}`;
+      // MODIFICACIÓN CLAVE AQUÍ: AÑADE API_BASE_URL
+      const url = `${API_BASE_URL}/api/reservations${queryParams.toString() ? `?${queryParams}` : ""}`;
       const response = await fetch(url);
       if (!response.ok) throw new Error("Failed to fetch reservations");
       return response.json();

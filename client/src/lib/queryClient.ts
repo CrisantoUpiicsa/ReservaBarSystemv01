@@ -1,5 +1,8 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
+// Define la URL base aquí. Esto leerá el valor de la variable de entorno.
+const API_BASE_URL = process.env.REACT_APP_API_URL;
+
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
@@ -9,16 +12,24 @@ async function throwIfResNotOk(res: Response) {
 
 export async function apiRequest(
   method: string,
-  url: string,
+  url: string, // Esta 'url' es la ruta relativa (ej. "/api/reservations")
   data?: unknown | undefined,
 ): Promise<Response> {
-  const res = await fetch(url, {
-    method,
-    headers: data ? { "Content-Type": "application/json" } : {},
-    body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
-  });
+  const token = localStorage.getItem("auth_token");
+  const headers: HeadersInit = data ? { "Content-Type": "application/json" } : {};
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
 
+  // **** CORRECCIÓN CLAVE AQUÍ ****
+  // Construye la URL completa usando la API_BASE_URL
+  const fullUrl = `${API_BASE_URL}${url}`;
+
+  const res = await fetch(fullUrl, { // Usa la URL completa aquí
+    method,
+    headers,
+    body: data ? JSON.stringify(data) : undefined,
+  });
   await throwIfResNotOk(res);
   return res;
 }
@@ -29,7 +40,11 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey[0] as string, {
+    // **** CORRECCIÓN CLAVE AQUÍ ****
+    // queryKey[0] es la ruta relativa, así que también necesita la API_BASE_URL
+    const fullUrl = `${API_BASE_URL}${queryKey[0] as string}`;
+
+    const res = await fetch(fullUrl, { // Usa la URL completa aquí
       credentials: "include",
     });
 
