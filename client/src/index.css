@@ -68,7 +68,8 @@
 
 @layer base {
   * {
-    @apply border-border;
+    /* CORRECCIÓN CLAVE: Usamos 'border' y luego la variable CSS directamente en Tailwind */
+    @apply border border-[var(--border)];
   }
 
   body {
