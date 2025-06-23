@@ -20,38 +20,36 @@ jobs:
           submodules: true
           lfs: false
 
-      # *** NUEVOS PASOS AÑADIDOS AQUÍ PARA COMPILAR EL FRONTEND EXPLICITAMENTE ***
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20.x' # Asegúrate de que esta versión coincida con lo que usas para el frontend
+          node-version: '20.x' # Asegúrate de que esta versión coincida
 
-      - name: Install Frontend Dependencies
-        working-directory: ./client # <--- ¡IMPORTANTE! Ejecuta este paso DENTRO de la carpeta client/
-        run: npm install
+      # *** CAMBIO IMPORTANTE: Ejecutamos npm install y npm build directamente en la subcarpeta 'client' ***
+      - name: Install Frontend Dependencies in client/
+        run: npm install # Este npm install buscará package.json en el directorio de trabajo
+        working-directory: ./client # <-- ¡Aquí forzamos el directorio de trabajo!
 
-      - name: Build Frontend Application
-        working-directory: ./client # <--- ¡IMPORTANTE! Ejecuta este paso DENTRO de la carpeta client/
-        run: npm run build
-      # *** FIN DE LOS NUEVOS PASOS ***
+      - name: Build Frontend Application in client/
+        run: npm run build # Este npm run build buscará package.json en el directorio de trabajo
+        working-directory: ./client # <-- ¡Aquí forzamos el directorio de trabajo!
+        env: # Asegúrate de que Vite tenga el entorno de producción
+          NODE_ENV: production
 
-      - name: Build And Deploy
+      - name: Build And Deploy Static Web App
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_YELLOW_SEA_0462AF710 }}
           repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
           action: "upload"
-          ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
-          # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
-          app_location: "/client" # App source code path
-          api_location: "" # Api source code path - optional
-          output_location: "dist" # Built app content directory - optional
-          # *** ELIMINA O COMENTA ESTA LÍNEA, YA NO LA NECESITAMOS ***
-          # app_build_command: "cd client && npm install && npm run build"
-          # *** TAMBIÉN ESTA SE ELIMINA/COMENTA ***
-          # skip_app_build: false # Ya no es necesario con los pasos explícitos
-          ###### End of Repository/Build Configurations ######
+          # Aquí ya no especificamos app_build_command ni skip_app_build,
+          # porque los artefactos ya fueron creados por los pasos anteriores.
+          app_location: "/client" # La ubicación de tu aplicación React dentro del repositorio (punto de entrada)
+          api_location: "" # Se deja vacío ya que tu API está en App Service
+          output_location: "dist" # La carpeta donde los pasos anteriores guardaron la compilación de Vite (client/dist)
+          # NOTA: Azure/static-web-apps-deploy@v1 asume que el 'output_location' es relativo a 'app_location'.
+          # Es decir, buscará /github/workspace/client/dist
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
