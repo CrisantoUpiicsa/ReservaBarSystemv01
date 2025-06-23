@@ -1,3 +1,4 @@
+/* client/src/index.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -68,7 +69,6 @@
 
 @layer base {
   * {
-    /* CORRECCIÓN CLAVE: Usamos 'border' y luego la variable CSS directamente en Tailwind */
     @apply border border-[var(--border)];
   }
 
