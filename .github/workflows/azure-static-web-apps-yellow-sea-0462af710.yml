@@ -25,14 +25,14 @@ jobs:
         with:
           node-version: '20.x' # Asegúrate de que esta versión coincida
 
-      # *** CAMBIO IMPORTANTE: Ejecutamos npm install y npm build directamente en la subcarpeta 'client' ***
       - name: Install Frontend Dependencies in client/
-        run: npm install # Este npm install buscará package.json en el directorio de trabajo
-        working-directory: ./client # <-- ¡Aquí forzamos el directorio de trabajo!
+        run: npm install
+        working-directory: ./client # Ejecuta npm install DENTRO de la carpeta client/
 
       - name: Build Frontend Application in client/
-        run: npm run build # Este npm run build buscará package.json en el directorio de trabajo
-        working-directory: ./client # <-- ¡Aquí forzamos el directorio de trabajo!
+        # *** CAMBIO CRÍTICO AQUÍ: Ejecutar directamente 'npx vite build' en lugar de 'npm run build' ***
+        run: npx vite build
+        working-directory: ./client # Ejecuta npx vite build DENTRO de la carpeta client/
         env: # Asegúrate de que Vite tenga el entorno de producción
           NODE_ENV: production
 
@@ -43,13 +43,9 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_YELLOW_SEA_0462AF710 }}
           repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
           action: "upload"
-          # Aquí ya no especificamos app_build_command ni skip_app_build,
-          # porque los artefactos ya fueron creados por los pasos anteriores.
           app_location: "/client" # La ubicación de tu aplicación React dentro del repositorio (punto de entrada)
           api_location: "" # Se deja vacío ya que tu API está en App Service
           output_location: "dist" # La carpeta donde los pasos anteriores guardaron la compilación de Vite (client/dist)
-          # NOTA: Azure/static-web-apps-deploy@v1 asume que el 'output_location' es relativo a 'app_location'.
-          # Es decir, buscará /github/workspace/client/dist
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
