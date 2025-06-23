@@ -1,13 +1,14 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  // *** Asegúrate que esta ruta es correcta respecto a la raíz de tu proyecto 'client/' ***
   content: [
     "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}", // Esto es CRUCIAL para que Tailwind escanee tus archivos
+    "./src/**/*.{js,ts,jsx,tsx}", // Esto le dice a Tailwind que escanee todos estos archivos
   ],
   theme: {
     extend: {
       colors: {
-        // Aquí defines tus colores personalizados usando las variables CSS
+        // Asegúrate de que estos nombres coincidan EXACTAMENTE con tus variables CSS
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         muted: "hsl(var(--muted))",
@@ -16,7 +17,7 @@ export default {
         "popover-foreground": "hsl(var(--popover-foreground))",
         card: "hsl(var(--card))",
         "card-foreground": "hsl(var(--card-foreground))",
-        border: "hsl(var(--border))", // Ya lo habías corregido con border-[var(--border)], pero es bueno tener el color definido
+        border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         primary: "hsl(var(--primary))",
         "primary-foreground": "hsl(var(--primary-foreground))",
@@ -27,10 +28,20 @@ export default {
         destructive: "hsl(var(--destructive))",
         "destructive-foreground": "hsl(var(--destructive-foreground))",
         ring: "hsl(var(--ring))",
-        // Aquí puedes seguir añadiendo los colores de chart y sidebar si los usas con clases de Tailwind
-        // Por ejemplo:
+        // También puedes añadir los colores de chart y sidebar si planeas usarlos directamente en clases de Tailwind
         // 'chart-1': "hsl(var(--chart-1))",
+        // 'chart-2': "hsl(var(--chart-2))",
+        // 'chart-3': "hsl(var(--chart-3))",
+        // 'chart-4': "hsl(var(--chart-4))",
+        // 'chart-5': "hsl(var(--chart-5))",
         // 'sidebar-background': "hsl(var(--sidebar-background))",
+        // 'sidebar-foreground': "hsl(var(--sidebar-foreground))",
+        // 'sidebar-primary': "hsl(var(--sidebar-primary))",
+        // 'sidebar-primary-foreground': "hsl(var(--sidebar-primary-foreground))",
+        // 'sidebar-accent': "hsl(var(--sidebar-accent))",
+        // 'sidebar-accent-foreground': "hsl(var(--sidebar-accent-foreground))",
+        // 'sidebar-border': "hsl(var(--sidebar-border))",
+        // 'sidebar-ring': "hsl(var(--sidebar-ring))",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -54,6 +65,8 @@ export default {
     },
   },
   plugins: [
-    require("tailwindcss-animate"), // Si usas shadcn/ui o similar, esto es común
+    // Asegúrate de que este plugin esté instalado. Si no, quítalo temporalmente o instálalo.
+    // npm install tailwindcss-animate
+    require("tailwindcss-animate"), 
   ],
 };
